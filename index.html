@@ -875,7 +875,22 @@ function normalize(str) {
     .replace(/[ýÿ]/g,'y').replace(/[žź]/g,'z').trim();
 }
 function isMatch(ing, sel) {
-  return normalize(ing) === normalize(sel) || normalize(ing).includes(normalize(sel)) || normalize(sel).includes(normalize(ing));
+  var ni = normalize(ing), ns = normalize(sel);
+  if (ni === ns) return true;
+  var selWords = ns.split(/\s+/);
+  var ingTokens = ni.split(/[\s,/()]+/).filter(function(t){ return t && !/^\d+[gml]*$/.test(t); });
+  for (var si = 0; si < selWords.length; si++) {
+    var sw = selWords[si], matched = false;
+    for (var ii = 0; ii < ingTokens.length; ii++) {
+      var iw = ingTokens[ii];
+      if (iw === sw) { matched = true; break; }
+      var minPre = Math.min(sw.length, iw.length, 4);
+      if (minPre < 3) continue;
+      if (iw.substring(0, minPre) === sw.substring(0, minPre) && Math.abs(iw.length - sw.length) <= 3) { matched = true; break; }
+    }
+    if (!matched) return false;
+  }
+  return true;
 }
 
 // ── MATCH RECIPES (port z code.gs) ────────────────────────
