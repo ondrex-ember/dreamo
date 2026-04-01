@@ -1125,6 +1125,29 @@ function quickAddFromHint(name) { const tags=document.querySelectorAll('.tag'); 
 // ── UTILS ─────────────────────────────────────────────────
 function capitalize(s) { return s ? s[0].toUpperCase()+s.slice(1) : ''; }
 
+// ── SECRET REFRESH — 4x tap na logo ──────────────────────
+let logoTaps = 0, logoTimer = null;
+document.querySelector('h1').addEventListener('click', () => {
+  logoTaps++;
+  clearTimeout(logoTimer);
+  logoTimer = setTimeout(() => { logoTaps = 0; }, 2000);
+  if (logoTaps >= 4) {
+    logoTaps = 0;
+    localStorage.removeItem(LS_DATA);
+    localStorage.removeItem(LS_DATA_TTL);
+    const h1 = document.querySelector('h1');
+    h1.style.color = 'var(--accent2)';
+    h1.textContent = '↻ Aktualizuji data…';
+    loadStaticData().then(() => {
+      renderIngredients();
+      updateCTA();
+      updateProgress();
+      h1.innerHTML = 'Co mám <em>doma?</em>';
+      h1.style.color = '';
+    });
+  }
+});
+
 // ── THEME ─────────────────────────────────────────────────
 const LS_THEME='comamdom_theme';
 function initTheme(){ const s=localStorage.getItem(LS_THEME),sys=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'; applyTheme(s||sys,false); }
