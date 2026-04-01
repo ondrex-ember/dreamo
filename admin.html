@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreamo Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0F0E0C;
+  --surface: #1A1916;
+  --surface2: #222018;
+  --ink: #E8E3D8;
+  --ink2: #8A8478;
+  --accent: #C04E38;
+  --green: #3A7558;
+  --amber: #C89630;
+  --border: #2C2A24;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+/* ── LOGIN ── */
+#loginScreen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+}
+.login-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 40px; width: 340px; text-align: center;
+}
+.login-box h2 { font-size: 22px; font-weight: 500; margin-bottom: 8px; }
+.login-box p  { font-size: 13px; color: var(--ink2); margin-bottom: 24px; }
+.login-input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius); background: var(--bg);
+  color: var(--ink); font-family: 'DM Mono', monospace; font-size: 14px;
+  outline: none; margin-bottom: 12px; letter-spacing: 0.1em;
+  transition: border-color 0.15s;
+}
+.login-input:focus { border-color: var(--ink2); }
+
+/* ── LAYOUT ── */
+#adminApp { display: none; }
+.top-bar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 16px 28px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 10;
+}
+.top-bar-title { font-size: 16px; font-weight: 500; }
+.top-bar-title span { color: var(--accent); }
+.top-bar-meta { font-size: 12px; color: var(--ink2); }
+.tabs {
+  display: flex; gap: 4px; padding: 16px 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 8px 18px; border-radius: var(--radius) var(--radius) 0 0;
+  border: 1px solid transparent; border-bottom: none;
+  background: none; color: var(--ink2); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; cursor: pointer; transition: all 0.12s;
+}
+.tab:hover { color: var(--ink); }
+.tab.active {
+  background: var(--surface); border-color: var(--border);
+  color: var(--ink); font-weight: 500;
+  border-bottom-color: var(--surface);
+  margin-bottom: -1px;
+}
+.tab-content { display: none; padding: 28px; max-width: 1100px; }
+.tab-content.active { display: block; }
+
+/* ── STAT CARDS ── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 12px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 20px;
+}
+.stat-card .val { font-size: 32px; font-weight: 500; line-height: 1; margin-bottom: 4px; }
+.stat-card .lbl { font-size: 12px; color: var(--ink2); }
+.stat-card.green .val { color: #4A9470; }
+.stat-card.amber .val { color: var(--amber); }
+.stat-card.red   .val { color: var(--accent); }
+
+/* ── SECTION HEADERS ── */
+.section-title {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink2);
+  margin: 28px 0 12px; display: flex; align-items: center; gap: 10px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500;
+}
+.badge-red    { background: rgba(192,78,56,.15); color: var(--accent); }
+.badge-green  { background: rgba(58,117,88,.15);  color: #4A9470; }
+.badge-amber  { background: rgba(200,150,48,.15);  color: var(--amber); }
+
+/* ── TABLES ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink2);
+  border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--surface2); }
+.mono { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink2); }
+.bar-wrap { display: flex; align-items: center; gap: 8px; }
+.bar { height: 6px; border-radius: 3px; background: var(--green); min-width: 2px; }
+.bar.low { background: var(--accent); }
+.bar.mid { background: var(--amber); }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 6px 14px; border-radius: var(--radius); border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #a83f2d; }
+.btn-ghost {
+  background: none; border: 1px solid var(--border);
+  color: var(--ink2);
+}
+.btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+.btn-danger { background: rgba(192,78,56,.15); color: var(--accent); border: 1px solid rgba(192,78,56,.3); }
+.btn-danger:hover { background: rgba(192,78,56,.3); }
+.btn-green { background: rgba(58,117,88,.15); color: #4A9470; border: 1px solid rgba(58,117,88,.3); }
+.btn-green:hover { background: rgba(58,117,88,.3); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── FORMS ── */
+.form-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-field label { font-size: 11px; color: var(--ink2); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+.form-input {
+  padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface2); color: var(--ink);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none;
+  transition: border-color 0.12s; min-width: 140px;
+}
+.form-input:focus { border-color: var(--ink2); }
+
+/* ── ALERTS ── */
+.alert {
+  padding: 10px 14px; border-radius: var(--radius); font-size: 13px;
+  margin-bottom: 16px; display: none;
+}
+.alert.show { display: block; }
+.alert-success { background: rgba(58,117,88,.15); border: 1px solid rgba(58,117,88,.3); color: #4A9470; }
+.alert-error   { background: rgba(192,78,56,.15); border: 1px solid rgba(192,78,56,.3); color: var(--accent); }
+
+/* ── LOADING ── */
+.loader { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--ink2); border-radius: 50%; animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-row td { padding: 24px; text-align: center; color: var(--ink2); }
+
+/* ── EXPORT BUTTONS ── */
+.export-row { display: flex; gap: 8px; margin-bottom: 20px; }
+
+/* ── EMPTY ── */
+.empty-state { padding: 32px; text-align: center; color: var(--ink2); font-size: 13px; }
+.empty-state strong { display: block; color: var(--ink); font-size: 16px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>🔒 Dreamo Admin</h2>
+    <p>Zadej admin heslo pro přístup</p>
+    <input type="password" class="login-input" id="pinInput" placeholder="heslo"
+      onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="btn btn-primary" style="width:100%;padding:10px" onclick="doLogin()">Přihlásit</button>
+    <div id="loginError" style="color:var(--accent);font-size:12px;margin-top:10px;display:none">Špatné heslo</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <div class="top-bar">
+    <div class="top-bar-title">Dreamo <span>Admin</span></div>
+    <div class="top-bar-meta" id="topMeta">načítám…</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('stats')">📊 Přehled</button>
+    <button class="tab" onclick="showTab('duplicates')">🔁 Duplikáty</button>
+    <button class="tab" onclick="showTab('missing')">⚠️ Chybějící</button>
+    <button class="tab" onclick="showTab('analytics')">📈 Analytika</button>
+    <button class="tab" onclick="showTab('export')">📤 Export / Import</button>
+  </div>
+
+  <!-- TAB: STATS -->
+  <div class="tab-content active" id="tab-stats">
+    <div class="stat-grid" id="statCards">
+      <div class="stat-card"><div class="loader"></div></div>
+    </div>
+
+    <div class="section-title">Ingredience — nejméně v receptech</div>
+    <table class="data-table" id="ingLeastTable">
+      <thead><tr><th>Ingredience</th><th>Kategorie</th><th>Použití v receptech</th><th>Graf</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="4"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+    <div class="section-title" style="margin-top:32px">Recepty — nejvíce ingrediencí</div>
+    <table class="data-table" id="recMostTable">
+      <thead><tr><th>Recept</th><th>Kategorie</th><th>Počet ingrediencí</th><th>Obtížnost</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="4"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+    <div class="section-title" style="margin-top:32px">Recepty — nejméně ingrediencí</div>
+    <table class="data-table" id="recLeastTable">
+      <thead><tr><th>Recept</th><th>Kategorie</th><th>Počet ingrediencí</th><th>Obtížnost</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="4"><span class="loader"></span></td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- TAB: DUPLICATES -->
+  <div class="tab-content" id="tab-duplicates">
+    <div id="dupAlert" class="alert"></div>
+
+    <div class="section-title">Duplikáty — ingredience <span id="ingDupBadge"></span></div>
+    <table class="data-table" id="ingDupTable">
+      <thead><tr><th>Název</th><th>Řádek</th><th>Konflikt s</th><th>Akce</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="4"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+    <div class="section-title" style="margin-top:32px">Duplikáty — recepty <span id="recDupBadge"></span></div>
+    <table class="data-table" id="recDupTable">
+      <thead><tr><th>ID</th><th>Název</th><th>Řádek</th><th>Konflikt s</th><th>Akce</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="5"><span class="loader"></span></td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- TAB: MISSING -->
+  <div class="tab-content" id="tab-missing">
+    <div id="missingAlert" class="alert"></div>
+
+    <p style="font-size:13px;color:var(--ink2);margin-bottom:20px">
+      Ingredience které se vyskytují v receptech, ale chybí v master listu <strong>Ingredients</strong>. Přidej je jedním klikem.
+    </p>
+
+    <div class="form-row" style="margin-bottom:24px">
+      <div class="form-field">
+        <label>Název</label>
+        <input type="text" class="form-input" id="newIngName" placeholder="např. Jablko">
+      </div>
+      <div class="form-field">
+        <label>Kategorie</label>
+        <input type="text" class="form-input" id="newIngCat" placeholder="Zelenina" value="Ostatní">
+      </div>
+      <div class="form-field">
+        <label>Emoji</label>
+        <input type="text" class="form-input" id="newIngEmoji" placeholder="🍎" style="width:80px">
+      </div>
+      <div class="form-field">
+        <label>Tagy</label>
+        <input type="text" class="form-input" id="newIngTags" placeholder="vegan,gluten-free">
+      </div>
+      <button class="btn btn-primary" onclick="addIngredientManual()">+ Přidat</button>
+    </div>
+
+    <table class="data-table" id="missingTable">
+      <thead><tr><th>Ingredience</th><th>Použití v receptech</th><th>Akce</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="3"><span class="loader"></span></td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- TAB: ANALYTICS -->
+  <div class="tab-content" id="tab-analytics">
+
+    <!-- DB Health -->
+    <div class="stat-grid" id="healthCards">
+      <div class="stat-card"><div class="loader"></div></div>
+    </div>
+
+    <!-- Ingredient full ranking -->
+    <div class="section-title">Ingredience — pokrytí receptů (všechny)</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <input type="text" class="form-input" id="ingFilter" placeholder="Filtrovat ingredienci…" oninput="filterIngTable(this.value)" style="min-width:200px;max-width:280px">
+      <select class="form-input" id="ingSort" onchange="sortIngTable(this.value)" style="min-width:160px">
+        <option value="recipes_desc">Recepty ↓</option>
+        <option value="recipes_asc">Recepty ↑</option>
+        <option value="likes_desc">Likes ↓</option>
+        <option value="name_asc">Název A-Z</option>
+        <option value="cat_asc">Kategorie</option>
+      </select>
+      <span id="ingFilterCount" style="font-size:12px;color:var(--ink2)"></span>
+    </div>
+    <table class="data-table" id="ingFullTable">
+      <thead><tr><th>#</th><th>Ingredience</th><th>Kategorie</th><th>V receptech</th><th>Likes (users)</th><th>Score</th><th>Graf</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="7"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+    <!-- Category coverage -->
+    <div class="section-title" style="margin-top:36px">Kategorie — pokrytí receptů</div>
+    <table class="data-table" id="catTable">
+      <thead><tr><th>Kategorie</th><th>Ingrediencí</th><th>S receptem</th><th>Bez receptu</th><th>Pokrytí</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="5"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+    <!-- Recipe analytics -->
+    <div class="section-title" style="margin-top:36px">Recepty — distribuce obtížnosti</div>
+    <div id="diffGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
+      <div class="stat-card"><div class="loader"></div></div>
+    </div>
+
+    <div class="section-title">Recepty — průměrný čas dle kategorie</div>
+    <table class="data-table" id="catTimeTable">
+      <thead><tr><th>Kategorie</th><th>Receptů</th><th>Průměrný čas</th><th>Min</th><th>Max</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="5"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+    <div class="section-title" style="margin-top:36px">Recepty bez KeyIngredients <span id="noKeyBadge"></span></div>
+    <p style="font-size:12px;color:var(--ink2);margin-bottom:12px">Tyto recepty mají horší matching — doporučeno doplnit KeyIngredients přímo v Sheets.</p>
+    <table class="data-table" id="noKeyTable">
+      <thead><tr><th>ID</th><th>Název</th><th>Kategorie</th><th>Ingredience (první = auto-klíčová)</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="4"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+    <div class="section-title" style="margin-top:36px">Recepty s málo ingrediencemi (&lt; 4)</div>
+    <table class="data-table" id="thinRecipeTable">
+      <thead><tr><th>ID</th><th>Název</th><th>Kategorie</th><th>Počet ingr.</th><th>Ingredience</th></tr></thead>
+      <tbody><tr class="loading-row"><td colspan="5"><span class="loader"></span></td></tr></tbody>
+    </table>
+
+  </div>
+
+  <!-- TAB: EXPORT -->
+  <div class="tab-content" id="tab-export">
+    <div class="section-title">CSV Export</div>
+    <div class="export-row">
+      <button class="btn btn-ghost" onclick="exportCsv('Recipes')">⬇ Recepty (CSV)</button>
+      <button class="btn btn-ghost" onclick="exportCsv('Ingredients')">⬇ Ingredience (CSV)</button>
+      <button class="btn btn-ghost" onclick="exportCsv('QueryLog')">⬇ Query Log (CSV)</button>
+    </div>
+
+    <div class="section-title" style="margin-top:32px">CSV Import receptů</div>
+    <p style="font-size:13px;color:var(--ink2);margin-bottom:16px">
+      Formát: <span class="mono">ID, Name, Category, Ingredients, Steps, Time, Difficulty, Tags, Description, KeyIngredients</span><br>
+      Existující ID budou přeskočena. Nová budou přidána na konec.
+    </p>
+    <div id="importAlert" class="alert"></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input type="file" id="csvFile" accept=".csv,.tsv,.txt"
+        style="font-size:13px;color:var(--ink2)" onchange="previewCsv(this)">
+      <button class="btn btn-primary" id="importBtn" onclick="importCsv()" disabled>⬆ Importovat</button>
+    </div>
+    <div id="csvPreview" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<script>
+const GAS_URL = '<?= ScriptApp.getService().getUrl() ?>';
+let ADMIN_PASS = '';
+let csvData    = null;
+
+// ── LOGIN ──────────────────────────────────────────────────
+function doLogin() {
+  const pass = document.getElementById('pinInput').value.trim();
+  if (!pass) return;
+  ADMIN_PASS = pass;
+  // Test auth with stats call
+  apiGet('stats').then(data => {
+    if (data.error === 'Unauthorized') {
+      document.getElementById('loginError').style.display = 'block';
+      ADMIN_PASS = '';
+    } else {
+      document.getElementById('loginScreen').style.display  = 'none';
+      document.getElementById('adminApp').style.display     = 'block';
+      renderStats(data);
+    }
+  }).catch(() => {
+    document.getElementById('loginError').style.display = 'block';
+  });
+}
+
+// ── API ────────────────────────────────────────────────────
+async function apiGet(sub, extra) {
+  const params = new URLSearchParams(Object.assign({ action: 'admin', sub, pass: ADMIN_PASS }, extra || {}));
+  const res    = await fetch(GAS_URL + '?' + params.toString());
+  const text   = await res.text();
+  try { return JSON.parse(text); } catch(e) { return { error: text }; }
+}
+
+// ── TABS ───────────────────────────────────────────────────
+const tabLoaded = {};
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (!tabLoaded[name]) {
+    tabLoaded[name] = true;
+    if (name === 'duplicates') loadDuplicates();
+    if (name === 'missing')    loadMissing();
+    if (name === 'analytics')  loadAnalytics();
+  }
+}
+
+// ── STATS ──────────────────────────────────────────────────
+async function loadStats() {
+  const data = await apiGet('stats');
+  renderStats(data);
+}
+
+function renderStats(data) {
+  // Stat cards
+  document.getElementById('topMeta').textContent =
+    data.totalRecipes + ' receptů · ' + data.totalIngredients + ' ingrediencí';
+
+  const zeroCoverage = (data.ingredientStats || []).filter(i => i.count === 0).length;
+  document.getElementById('statCards').innerHTML = `
+    <div class="stat-card green"><div class="val">${data.totalRecipes}</div><div class="lbl">Receptů celkem</div></div>
+    <div class="stat-card green"><div class="val">${data.totalIngredients}</div><div class="lbl">Ingrediencí v master listu</div></div>
+    <div class="stat-card ${zeroCoverage > 0 ? 'red' : 'green'}"><div class="val">${zeroCoverage}</div><div class="lbl">Ingrediencí bez receptu</div></div>
+    <div class="stat-card amber"><div class="val">${(data.recipeMost[0] || {}).ingCount || 0}</div><div class="lbl">Max ingrediencí v receptu</div></div>
+    <div class="stat-card amber"><div class="val">${(data.recipeLeast[0] || {}).ingCount || 0}</div><div class="lbl">Min ingrediencí v receptu</div></div>
+  `;
+
+  // Ingredient least used — bottom 30
+  const bottom = (data.ingredientStats || []).slice(0, 30);
+  const maxCount = Math.max(...(data.ingredientStats || []).map(i => i.count), 1);
+  const ingTbody = document.querySelector('#ingLeastTable tbody');
+  if (!bottom.length) {
+    ingTbody.innerHTML = '<tr><td colspan="4" class="empty-state">Žádná data</td></tr>';
+  } else {
+    ingTbody.innerHTML = bottom.map(i => {
+      const w    = Math.round((i.count / maxCount) * 120);
+      const cls  = i.count === 0 ? 'low' : i.count < 3 ? 'mid' : '';
+      return `<tr>
+        <td>${i.emoji ? i.emoji + ' ' : ''}${i.name}</td>
+        <td><span class="mono">${i.category}</span></td>
+        <td><span class="${i.count === 0 ? 'badge badge-red' : ''}">${i.count}</span></td>
+        <td><div class="bar-wrap"><div class="bar ${cls}" style="width:${Math.max(w,2)}px"></div></div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Recipe most
+  renderRecipeTable('#recMostTable tbody', data.recipeMost || []);
+  renderRecipeTable('#recLeastTable tbody', data.recipeLeast || []);
+
+  tabLoaded['stats'] = true;
+}
+
+function renderRecipeTable(selector, rows) {
+  const tbody = document.querySelector(selector);
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Žádná data</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td>${r.name}</td>
+    <td><span class="mono">${r.category}</span></td>
+    <td><strong>${r.ingCount}</strong></td>
+    <td><span class="mono">${r.difficulty || ''}</span></td>
+  </tr>`).join('');
+}
+
+// ── DUPLICATES ─────────────────────────────────────────────
+async function loadDuplicates() {
+  const data = await apiGet('duplicates');
+
+  // Ingredient dups
+  const ingDupBadge = document.getElementById('ingDupBadge');
+  const ingTbody    = document.querySelector('#ingDupTable tbody');
+  const ingDups     = data.ingredientDuplicates || [];
+  ingDupBadge.innerHTML = ingDups.length
+    ? `<span class="badge badge-red">${ingDups.length}</span>`
+    : `<span class="badge badge-green">OK</span>`;
+
+  ingTbody.innerHTML = ingDups.length ? ingDups.map(d => `<tr>
+    <td>${d.name}</td>
+    <td><span class="mono">řádek ${d.row}</span></td>
+    <td><span style="color:var(--ink2)">${d.existing} (řádek ${d.existingRow})</span></td>
+    <td>
+      <button class="btn btn-danger" onclick="deleteDup('Ingredients','${d.name}',this)">Smazat tento</button>
+    </td>
+  </tr>`).join('')
+  : '<tr><td colspan="4" class="empty-state"><strong>Žádné duplikáty</strong>Ingredience jsou v pořádku.</td></tr>';
+
+  // Recipe dups
+  const recDupBadge = document.getElementById('recDupBadge');
+  const recTbody    = document.querySelector('#recDupTable tbody');
+  const recDups     = data.recipeDuplicates || [];
+  recDupBadge.innerHTML = recDups.length
+    ? `<span class="badge badge-red">${recDups.length}</span>`
+    : `<span class="badge badge-green">OK</span>`;
+
+  recTbody.innerHTML = recDups.length ? recDups.map(d => `<tr>
+    <td><span class="mono">${d.id}</span></td>
+    <td>${d.name}</td>
+    <td><span class="mono">řádek ${d.row}</span></td>
+    <td><span style="color:var(--ink2)">${d.existing} (${d.existingId})</span></td>
+    <td>
+      <button class="btn btn-danger" onclick="deleteDup('Recipes','${d.id}',this)">Smazat tento</button>
+    </td>
+  </tr>`).join('')
+  : '<tr><td colspan="5" class="empty-state"><strong>Žádné duplikáty</strong>Recepty jsou v pořádku.</td></tr>';
+}
+
+async function deleteDup(sheet, id, btn) {
+  btn.disabled = true;
+  btn.textContent = '…';
+  const sub  = sheet === 'Recipes' ? 'deleteRecipe' : 'deleteIngredient';
+  const data = await apiGet(sub, { id, name: id });
+  if (data.ok) {
+    btn.closest('tr').style.opacity = '0.4';
+    btn.textContent = 'Smazáno';
+    showAlert('dupAlert', 'success', 'Smazáno: ' + id);
+  } else {
+    btn.textContent = 'Chyba';
+    showAlert('dupAlert', 'error', data.error || 'Chyba při mazání');
+  }
+}
+
+// ── MISSING ────────────────────────────────────────────────
+async function loadMissing() {
+  const data   = await apiGet('missing');
+  const tbody  = document.querySelector('#missingTable tbody');
+  const missing = data.missing || [];
+
+  tbody.innerHTML = missing.length ? missing.map(m => `<tr>
+    <td>${m.name}</td>
+    <td><span class="badge badge-amber">${m.usedInRecipes}×</span></td>
+    <td>
+      <button class="btn btn-green" onclick="quickAddIngredient('${m.name.replace(/'/g,"\\'")}',this)">+ Přidat do master listu</button>
+    </td>
+  </tr>`).join('')
+  : '<tr><td colspan="3" class="empty-state"><strong>Vše OK</strong>Všechny ingredience v receptech jsou v master listu.</td></tr>';
+}
+
+async function quickAddIngredient(name, btn) {
+  btn.disabled = true;
+  btn.textContent = '…';
+  const data = await apiGet('addIngredient', { data: JSON.stringify({ name, category: 'Ostatní', emoji: '', tags: '' }) });
+  if (data.ok) {
+    btn.textContent = '✓ Přidáno';
+    btn.className   = 'btn';
+    btn.style.color = '#4A9470';
+    showAlert('missingAlert', 'success', 'Přidáno do master listu: ' + name);
+  } else {
+    btn.textContent = 'Chyba';
+    showAlert('missingAlert', 'error', data.error || 'Chyba');
+  }
+}
+
+async function addIngredientManual() {
+  const name  = document.getElementById('newIngName').value.trim();
+  const cat   = document.getElementById('newIngCat').value.trim() || 'Ostatní';
+  const emoji = document.getElementById('newIngEmoji').value.trim();
+  const tags  = document.getElementById('newIngTags').value.trim();
+  if (!name) return;
+
+  const data = await apiGet('addIngredient', { data: JSON.stringify({ name, category: cat, emoji, tags }) });
+  if (data.ok) {
+    showAlert('missingAlert', 'success', 'Přidáno: ' + name);
+    document.getElementById('newIngName').value  = '';
+    document.getElementById('newIngEmoji').value = '';
+    tabLoaded['missing'] = false;
+    loadMissing();
+  } else {
+    showAlert('missingAlert', 'error', data.error || 'Chyba');
+  }
+}
+
+// ── EXPORT / IMPORT ────────────────────────────────────────
+function exportCsv(sheet) {
+  const url = GAS_URL + '?action=admin&sub=exportCsv&sheet=' + sheet + '&pass=' + encodeURIComponent(ADMIN_PASS);
+  window.open(url, '_blank');
+}
+
+function previewCsv(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text  = e.target.result;
+    const lines = text.trim().split('\n');
+    csvData = lines;
+    const preview = document.getElementById('csvPreview');
+    preview.innerHTML = `
+      <p style="font-size:13px;color:var(--ink2);margin-bottom:8px">
+        Nalezeno <strong style="color:var(--ink)">${lines.length}</strong> řádků (včetně headeru)
+      </p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--ink2);overflow-x:auto;white-space:pre">
+${lines.slice(0, 5).join('\n')}${lines.length > 5 ? '\n… a dalších ' + (lines.length - 5) + ' řádků' : ''}
+      </div>`;
+    document.getElementById('importBtn').disabled = false;
+  };
+  reader.readAsText(file);
+}
+
+async function importCsv() {
+  if (!csvData) return;
+  const btn = document.getElementById('importBtn');
+  btn.disabled = true; btn.textContent = 'Importuji…';
+
+  // POST to GAS - send CSV as chunks if large
+  const payload = { action: 'adminImportCsv', pass: ADMIN_PASS, csv: csvData.join('\n') };
+  try {
+    const res  = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showAlert('importAlert', 'success', 'Importováno ' + (data.added || 0) + ' nových receptů, přeskočeno ' + (data.skipped || 0) + ' existujících.');
+    } else {
+      showAlert('importAlert', 'error', data.error || 'Chyba při importu');
+    }
+  } catch(e) {
+    showAlert('importAlert', 'error', e.message);
+  }
+  btn.disabled = false; btn.textContent = '⬆ Importovat';
+}
+
+// ── ANALYTICS ──────────────────────────────────────────────
+let analyticsData = null;
+
+async function loadAnalytics() {
+  const data = await apiGet('analytics');
+  analyticsData = data;
+
+  renderHealthCards(data);
+  renderIngFullTable(data);
+  renderCatTable(data);
+  renderDiffCards(data);
+  renderCatTimeTable(data);
+  renderNoKeyTable(data);
+  renderThinRecipes(data);
+}
+
+// DB Health cards
+function renderHealthCards(data) {
+  const pctIng = data.totalIngredients > 0
+    ? Math.round((data.ingredientsWithRecipes / data.totalIngredients) * 100) : 0;
+  const pctKey = data.totalRecipes > 0
+    ? Math.round((data.recipesWithKeyIng / data.totalRecipes) * 100) : 0;
+  const avgIng = data.totalRecipes > 0
+    ? (data.totalIngredientSlots / data.totalRecipes).toFixed(1) : 0;
+
+  document.getElementById('healthCards').innerHTML = `
+    <div class="stat-card ${pctIng >= 80 ? 'green' : pctIng >= 50 ? 'amber' : 'red'}">
+      <div class="val">${pctIng}%</div>
+      <div class="lbl">Ingrediencí v aspoň 1 receptu</div>
+    </div>
+    <div class="stat-card ${pctKey >= 80 ? 'green' : pctKey >= 50 ? 'amber' : 'red'}">
+      <div class="val">${pctKey}%</div>
+      <div class="lbl">Receptů s KeyIngredients</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="val">${avgIng}</div>
+      <div class="lbl">Průměr ingrediencí / recept</div>
+    </div>
+    <div class="stat-card ${data.recipesUnder4Ing === 0 ? 'green' : 'amber'}">
+      <div class="val">${data.recipesUnder4Ing}</div>
+      <div class="lbl">Receptů s méně než 4 ingr.</div>
+    </div>
+    <div class="stat-card green">
+      <div class="val">${data.totalLikeEvents || 0}</div>
+      <div class="lbl">Celkem user likes (kliků)</div>
+    </div>
+    <div class="stat-card ${data.ingredientsWithNoRecipe === 0 ? 'green' : 'red'}">
+      <div class="val">${data.ingredientsWithNoRecipe}</div>
+      <div class="lbl">Ingrediencí bez receptu</div>
+    </div>`;
+}
+
+// Full ingredient table with likes + sort/filter
+let ingRows = [];
+function renderIngFullTable(data) {
+  ingRows = (data.ingredientStats || []).map((ing, idx) => ({
+    ...ing,
+    rank: idx + 1,
+    likes: data.likesMap ? (data.likesMap[ing.name] || 0) : 0,
+    score: ing.count * 2 + (data.likesMap ? (data.likesMap[ing.name] || 0) : 0),
+  }));
+  renderIngRows(ingRows);
+  document.getElementById('ingFilterCount').textContent = ingRows.length + ' ingrediencí';
+}
+
+function renderIngRows(rows) {
+  const maxCount = Math.max(...rows.map(r => r.count), 1);
+  const tbody = document.querySelector('#ingFullTable tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Žádná data</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => {
+    const w   = Math.max(Math.round((r.count / maxCount) * 100), 2);
+    const cls = r.count === 0 ? 'low' : r.count < 3 ? 'mid' : '';
+    const likeBadge = r.likes > 0
+      ? `<span class="badge badge-amber" style="font-size:10px">${r.likes}</span>`
+      : '<span style="color:var(--ink2);font-size:12px">—</span>';
+    return `<tr>
+      <td class="mono">${i + 1}</td>
+      <td>${r.emoji ? r.emoji + ' ' : ''}${r.name}</td>
+      <td><span class="mono">${r.category}</span></td>
+      <td><strong>${r.count}</strong></td>
+      <td>${likeBadge}</td>
+      <td><span class="badge ${r.score > 10 ? 'badge-green' : r.score > 3 ? 'badge-amber' : 'badge-red'}">${r.score}</span></td>
+      <td><div class="bar-wrap"><div class="bar ${cls}" style="width:${w}px;max-width:120px"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterIngTable(q) {
+  const filtered = ingRows.filter(r =>
+    r.name.toLowerCase().includes(q.toLowerCase()) ||
+    r.category.toLowerCase().includes(q.toLowerCase())
+  );
+  document.getElementById('ingFilterCount').textContent = filtered.length + ' / ' + ingRows.length;
+  renderIngRows(filtered);
+}
+
+function sortIngTable(val) {
+  const sorted = [...ingRows];
+  if (val === 'recipes_desc') sorted.sort((a,b) => b.count - a.count);
+  if (val === 'recipes_asc')  sorted.sort((a,b) => a.count - b.count);
+  if (val === 'likes_desc')   sorted.sort((a,b) => b.likes - a.likes);
+  if (val === 'name_asc')     sorted.sort((a,b) => a.name.localeCompare(b.name, 'cs'));
+  if (val === 'cat_asc')      sorted.sort((a,b) => a.category.localeCompare(b.category, 'cs'));
+  renderIngRows(sorted);
+}
+
+// Category coverage
+function renderCatTable(data) {
+  const cats = data.categoryStats || [];
+  const tbody = document.querySelector('#catTable tbody');
+  tbody.innerHTML = cats.map(c => {
+    const pct = c.total > 0 ? Math.round((c.withRecipe / c.total) * 100) : 0;
+    const cls = pct >= 80 ? 'badge-green' : pct >= 50 ? 'badge-amber' : 'badge-red';
+    return `<tr>
+      <td><strong>${c.category}</strong></td>
+      <td>${c.total}</td>
+      <td>${c.withRecipe}</td>
+      <td>${c.withoutRecipe > 0 ? `<span class="badge badge-red">${c.withoutRecipe}</span>` : '<span class="badge badge-green">0</span>'}</td>
+      <td><span class="badge ${cls}">${pct}%</span></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="empty-state">Žádná data</td></tr>';
+}
+
+// Difficulty distribution
+function renderDiffCards(data) {
+  const diff = data.difficultyDist || {};
+  const total = (diff.easy || 0) + (diff.medium || 0) + (diff.hard || 0);
+  document.getElementById('diffGrid').innerHTML = [
+    { key: 'easy',   label: 'Easy',   color: 'green' },
+    { key: 'medium', label: 'Medium', color: 'amber' },
+    { key: 'hard',   label: 'Hard',   color: 'red'   },
+  ].map(d => {
+    const count = diff[d.key] || 0;
+    const pct   = total > 0 ? Math.round(count / total * 100) : 0;
+    return `<div class="stat-card ${d.color}">
+      <div class="val">${count}</div>
+      <div class="lbl">${d.label} (${pct}%)</div>
+    </div>`;
+  }).join('');
+}
+
+// Category time table
+function renderCatTimeTable(data) {
+  const cats = data.categoryTimeStats || [];
+  const tbody = document.querySelector('#catTimeTable tbody');
+  tbody.innerHTML = cats.map(c => `<tr>
+    <td>${c.category}</td>
+    <td>${c.count}</td>
+    <td><strong>${c.avg} min</strong></td>
+    <td class="mono">${c.min} min</td>
+    <td class="mono">${c.max} min</td>
+  </tr>`).join('') || '<tr><td colspan="5" class="empty-state">Žádná data</td></tr>';
+}
+
+// No KeyIngredients
+function renderNoKeyTable(data) {
+  const rows  = data.noKeyIngredients || [];
+  const badge = document.getElementById('noKeyBadge');
+  badge.innerHTML = rows.length
+    ? `<span class="badge badge-red">${rows.length}</span>`
+    : `<span class="badge badge-green">OK</span>`;
+  const tbody = document.querySelector('#noKeyTable tbody');
+  tbody.innerHTML = rows.length ? rows.map(r => `<tr>
+    <td class="mono">${r.id}</td>
+    <td>${r.name}</td>
+    <td class="mono">${r.category}</td>
+    <td style="color:var(--ink2);font-size:12px">${(r.ingredients || []).slice(0,4).join(', ')}…</td>
+  </tr>`).join('')
+  : '<tr><td colspan="4" class="empty-state"><strong>Vše OK</strong>Všechny recepty mají KeyIngredients.</td></tr>';
+}
+
+// Thin recipes
+function renderThinRecipes(data) {
+  const rows  = data.thinRecipes || [];
+  const tbody = document.querySelector('#thinRecipeTable tbody');
+  tbody.innerHTML = rows.length ? rows.map(r => `<tr>
+    <td class="mono">${r.id}</td>
+    <td>${r.name}</td>
+    <td class="mono">${r.category}</td>
+    <td><span class="badge badge-red">${r.ingCount}</span></td>
+    <td style="font-size:12px;color:var(--ink2)">${(r.ingredients || []).join(', ')}</td>
+  </tr>`).join('')
+  : '<tr><td colspan="5" class="empty-state"><strong>Vše OK</strong>Všechny recepty mají 4+ ingrediencí.</td></tr>';
+}
+
+// ── HELPERS ────────────────────────────────────────────────
+function showAlert(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className  = 'alert alert-' + (type === 'success' ? 'success' : 'error') + ' show';
+  el.textContent = msg;
+  setTimeout(() => { el.classList.remove('show'); }, 4000);
+}
+</script>
+</body>
+</html>
