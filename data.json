@@ -1,7 +1,7 @@
 {
   "_meta": {
     "version": "1.0.0",
-    "exportedAt": "2026-04-01T09:48:53.985Z",
+    "exportedAt": "2026-04-01T15:40:49.959Z",
     "totalRecipes": 759,
     "totalIngredients": 122,
     "collections": [
@@ -9,7 +9,7 @@
       "recipes"
     ],
     "globalLikes": {},
-    "checksum": "hmwtc37"
+    "checksum": "h83ehcu"
   },
   "ingredients": {
     "Zelenina": [
@@ -256,7 +256,7 @@
         ]
       },
       {
-        "name": "Makrela uzená",
+        "name": "Uzená makrela",
         "emoji": "🐟",
         "tags": [
           "gluten-free"
@@ -1243,7 +1243,7 @@
       ]
     },
     {
-      "name": "Makrela uzená",
+      "name": "Uzená makrela",
       "category": "Maso & ryby",
       "emoji": "🐟",
       "tags": [
