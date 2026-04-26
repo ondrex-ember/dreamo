@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Můj Košík – Sledování cen</title>
+  
+  <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js">
+  </script>
+  
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 
+                   'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    
+    .header {
+      text-align: center;
+      padding: 20px 0;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      background: linear-gradient(135deg, #22d3ee, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .header p {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    
+    /* Capture area */
+    .capture-area {
+      background: #1e293b;
+      border: 2px dashed #334155;
+      border-radius: 16px;
+      padding: 40px 20px;
+      text-align: center;
+      margin: 16px 0;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .capture-area:hover, .capture-area:active {
+      border-color: #22d3ee;
+      background: #1a2332;
+    }
+    
+    .capture-area .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    
+    .capture-area input[type="file"] {
+      display: none;
+    }
+    
+    /* Store selector */
+    .store-select {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+    
+    .store-btn {
+      padding: 12px 8px;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    
+    .store-btn.active {
+      border-color: #22d3ee;
+      background: #164e63;
+    }
+    
+    /* Progress */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      margin: 16px 0;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .progress-bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22d3ee, #a78bfa);
+      border-radius: 3px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+    
+    .status {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+      min-height: 20px;
+      margin: 8px 0;
+    }
+    
+    /* Items table */
+    .items-container {
+      display: none;
+      margin: 16px 0;
+    }
+    
+    .item-row {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .item-row .category-emoji {
+      font-size: 24px;
+      width: 36px;
+      text-align: center;
+    }
+    
+    .item-row .item-details {
+      flex: 1;
+    }
+    
+    .item-row input[type="text"] {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #334155;
+      color: #e2e8f0;
+      font-size: 14px;
+      padding: 4px 0;
+      outline: none;
+    }
+    
+    .item-row input[type="text"]:focus {
+      border-color: #22d3ee;
+    }
+    
+    .item-row .price-input {
+      width: 80px;
+      text-align: right;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #22d3ee;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 8px;
+      outline: none;
+    }
+    
+    .item-row .price-input:focus {
+      border-color: #22d3ee;
+    }
+    
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    
+    /* Category selector */
+    .category-select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 2px 4px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    
+    /* Total & Save */
+    .total-bar {
+      background: linear-gradient(135deg, #164e63, #1e1b4b);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin: 16px 0;
+    }
+    
+    .total-bar .amount {
+      font-size: 32px;
+      font-weight: 800;
+      color: #22d3ee;
+    }
+    
+    .total-bar .label {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    
+    .save-btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #22d3ee, #a78bfa);
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .save-btn:active {
+      transform: scale(0.98);
+    }
+    
+    .save-btn:disabled {
+      opacity: 0.5;
+    }
+    
+    /* Add manual row */
+    .add-btn {
+      width: 100%;
+      padding: 12px;
+      border: 2px dashed #334155;
+      border-radius: 12px;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+      margin: 8px 0;
+    }
+    
+    /* Image preview */
+    .preview-container {
+      margin: 16px 0;
+      text-align: center;
+      display: none;
+    }
+    
+    .preview-container img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      border: 2px solid #334155;
+    }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #22c55e;
+      color: #0f172a;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: transform 0.3s;
+      z-index: 100;
+    }
+    
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    /* Date input */
+    .date-input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      width: 100%;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🛒 Můj Košík</h1>
+    <p>Sleduj svou skutečnou inflaci</p>
+  </div>
+
+  <!-- DATE -->
+  <input type="date" class="date-input" id="receiptDate">
+
+  <!-- STORE SELECTOR -->
+  <div class="store-select">
+    <button class="store-btn" onclick="selectStore(this, 'Albert')">
+      🟠 Albert
+    </button>
+    <button class="store-btn" onclick="selectStore(this, 'Kaufland')">
+      🔴 Kaufland
+    </button>
+    <button class="store-btn" onclick="selectStore(this, 'Lidl')">
+      🔵 Lidl
+    </button>
+    <button class="store-btn" onclick="selectStore(this, 'Tesco')">
+      🔴 Tesco
+    </button>
+    <button class="store-btn" onclick="selectStore(this, 'Penny')">
+      🟡 Penny
+    </button>
+    <button class="store-btn" onclick="selectStore(this, 'Billa')">
+      🟢 Billa
+    </button>
+  </div>
+
+  <!-- CAPTURE -->
+  <div class="capture-area" onclick="document.getElementById('fileInput').click()">
+    <div class="icon">📸</div>
+    <div><strong>Vyfotit účtenku</strong></div>
+    <div style="color: #64748b; font-size: 12px; margin-top: 4px">
+      nebo klikni pro výběr souboru
+    </div>
+    <input type="file" id="fileInput" accept="image/*" 
+           capture="environment" onchange="handleFile(this)">
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-container" id="preview">
+    <img id="previewImg">
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar" id="progressBar">
+    <div class="fill" id="progressFill"></div>
+  </div>
+  <div class="status" id="status"></div>
+
+  <!-- ITEMS -->
+  <div class="items-container" id="itemsContainer">
+    <div id="itemsList"></div>
+    
+    <button class="add-btn" onclick="addManualItem()">
+      + Přidat položku ručně
+    </button>
+    
+    <div class="total-bar">
+      <div class="label">Celkem</div>
+      <div class="amount" id="totalAmount">0 Kč</div>
+    </div>
+    
+    <button class="save-btn" id="saveBtn" onclick="saveToSheets()">
+      💾 Uložit do Google Sheets
+    </button>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // =============================================
+    // KONFIGURACE - ZDE VLOŽ SVOU APPS SCRIPT URL
+    // =============================================
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2fm4vEDdq90VSqy5u1URErjX9E8MB1QHG6HH5-OGONd3zRX5Dju2XHpg9XsmaL7gq/exec';
+    
+    // =============================================
+    // STATE
+    // =============================================
+    let selectedStore = '';
+    let items = [];
+    let receiptCounter = 0;
+    
+    // Kategorie pro auto-detekci
+    const CATEGORIES = {
+      'mléko|mlék|milk': { emoji: '🥛', name: 'Mléčné' },
+      'máslo|butter': { emoji: '🧈', name: 'Mléčné' },
+      'sýr|eidam|gouda|hermelín': { emoji: '🧀', name: 'Mléčné' },
+      'jogurt|jogúrt': { emoji: '🥛', name: 'Mléčné' },
+      'chléb|chleb|houska|rohlík|pečivo|bageta': 
+        { emoji: '🍞', name: 'Pečivo' },
+      'kuře|kuřec|vepřov|hovězí|maso|salám|šunk|párek': 
+        { emoji: '🥩', name: 'Maso' },
+      'jablk|banán|pomaran|citron|hrušk|ovoce|jahod': 
+        { emoji: '🍎', name: 'Ovoce' },
+      'mrkev|brambor|cibul|česnek|rajč|okurk|paprik|zelen|salát': 
+        { emoji: '🥬', name: 'Zelenina' },
+      'vejce|vajec': { emoji: '🥚', name: 'Vejce' },
+      'pivo|víno|alkoh|rum|vodka': { emoji: '🍺', name: 'Alkohol' },
+      'cola|fanta|džus|voda|mineral|limonád|nápoj': 
+        { emoji: '🥤', name: 'Nápoje' },
+      'čokol|bonbon|sušenk|chips|křup|sladk': 
+        { emoji: '🍫', name: 'Sladkosti' },
+      'mouka|cukr|sůl|olej|ocet|koření|těstovin|rýže': 
+        { emoji: '🍝', name: 'Základ' },
+      'prací|mycí|savo|toalet|ubrousky|papír': 
+        { emoji: '🧹', name: 'Drogerie' },
+    };
+    
+    // =============================================
+    // INICIALIZACE
+    // =============================================
+    document.getElementById('receiptDate').valueAsDate = new Date();
+    
+    // =============================================
+    // STORE SELECTOR
+    // =============================================
+    function selectStore(btn, store) {
+      document.querySelectorAll('.store-btn')
+        .forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedStore = store;
+    }
+    
+    // =============================================
+    // FILE HANDLING
+    // =============================================
+    function handleFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      
+      // Preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('preview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+      
+      // OCR
+      processOCR(file);
+    }
+    
+    // =============================================
+    // OCR PROCESSING — Tesseract → OCRSpace fallback
+    // =============================================
+
+    // Preprocessing: grayscale + contrast boost přes canvas
+    function preprocessImage(file) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 2000;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            const ratio = Math.min(MAX / w, MAX / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+
+          // Nakresli a aplikuj grayscale + contrast
+          ctx.filter = 'grayscale(1) contrast(1.6) brightness(1.05)';
+          ctx.drawImage(img, 0, 0, w, h);
+
+          // Soft threshold — zesvětli světlé, ztmaví tmavé pixely
+          const imageData = ctx.getImageData(0, 0, w, h);
+          const d = imageData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            const lum = d[i]; // grayscale, R=G=B
+            const v = lum > 140 ? Math.min(255, lum + 30) : Math.max(0, lum - 30);
+            d[i] = d[i + 1] = d[i + 2] = v;
+          }
+          ctx.putImageData(imageData, 0, 0);
+          URL.revokeObjectURL(url);
+
+          // Vrátíme blob (pro Tesseract) + base64 (pro OCRSpace fallback)
+          canvas.toBlob(blob => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const base64 = e.target.result.split(',')[1];
+              resolve({ blob, base64, mimeType: 'image/jpeg' });
+            };
+            reader.readAsDataURL(blob);
+          }, 'image/jpeg', 0.92);
+        };
+        img.src = url;
+      });
+    }
+
+    async function processOCR(file) {
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+      const status = document.getElementById('status');
+
+      progressBar.style.display = 'block';
+      status.textContent = '🖼️ Předzpracovávám obrázek...';
+      progressFill.style.width = '5%';
+
+      let preprocessed;
+      try {
+        preprocessed = await preprocessImage(file);
+      } catch (err) {
+        // Preprocessing selhal — použijeme původní soubor
+        preprocessed = null;
+      }
+
+      const ocrInput = preprocessed ? preprocessed.blob : file;
+
+      // ---- KROK 1: Tesseract (offline, primární) ----
+      status.textContent = '🔍 Tesseract — rozpoznávám text...';
+      let tesseractText = null;
+      let tesseractOk = false;
+
+      try {
+        const result = await Tesseract.recognize(ocrInput, 'ces', {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              const pct = Math.round(m.progress * 80); // 0–80 %
+              progressFill.style.width = pct + '%';
+              status.textContent = `🔍 Tesseract... ${pct}%`;
+            }
+          }
+        });
+
+        tesseractText = result.data.text || '';
+        const confidence = result.data.confidence || 0;
+        const parsedItems = parseReceiptText(tesseractText);
+
+        const qualityOk = confidence >= 70 && parsedItems.length >= 3;
+
+        if (qualityOk) {
+          progressFill.style.width = '100%';
+          status.textContent = `✅ Tesseract (${Math.round(confidence)}% jistota) — zkontroluj položky ↓`;
+          items = parsedItems;
+          renderItems();
+          tesseractOk = true;
+        } else {
+          status.textContent = `⚠️ Tesseract slabý výsledek (${Math.round(confidence)}%, ${parsedItems.length} pol.) — zkouším OCRSpace...`;
+        }
+
+      } catch (err) {
+        status.textContent = '⚠️ Tesseract selhal — zkouším OCRSpace...';
+      }
+
+      if (tesseractOk) return;
+
+      // ---- KROK 2: OCRSpace přes GAS proxy (online fallback) ----
+      progressFill.style.width = '85%';
+
+      if (!preprocessed) {
+        // Musíme base64 ještě získat z původního souboru
+        preprocessed = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = e => resolve({
+            base64: e.target.result.split(',')[1],
+            mimeType: file.type || 'image/jpeg'
+          });
+          reader.readAsDataURL(file);
+        });
+      }
+
+      try {
+        const gasResponse = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'ocr',
+            imageBase64: preprocessed.base64,
+            mimeType: preprocessed.mimeType
+          })
+        });
+
+        const gasData = await gasResponse.json();
+
+        if (gasData.status === 'ok' && gasData.text) {
+          progressFill.style.width = '100%';
+          const parsedItems = parseReceiptText(gasData.text);
+          status.textContent = `✅ OCRSpace — nalezeno ${parsedItems.length} položek ↓`;
+          items = parsedItems;
+          renderItems();
+        } else {
+          throw new Error(gasData.message || 'OCRSpace vrátil prázdný výsledek');
+        }
+
+      } catch (err) {
+        progressFill.style.width = '100%';
+        // Jako záchrana zobrazíme co Tesseract aspoň dostal
+        if (tesseractText) {
+          const fallbackItems = parseReceiptText(tesseractText);
+          status.textContent = `⚠️ OCRSpace selhal — zobrazuji Tesseract výsledek (zkontroluj ručně)`;
+          items = fallbackItems;
+          renderItems();
+        } else {
+          status.textContent = '❌ Obě OCR metody selhaly: ' + err.message;
+        }
+      }
+    }
+    
+    // =============================================
+    // RECEIPT PARSER
+    // =============================================
+    function parseReceiptText(text) {
+      console.log('Raw OCR text:', text);
+      
+      const lines = text.split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 2);
+      
+      const parsed = [];
+      
+      // Vzory pro detekci cen
+      const patterns = [
+        // "Název produktu    29.90"
+        /^(.+?)\s+(\d{1,4}[.,]\d{2})\s*[A-Za-z]?\s*$/,
+        // "Název produktu  1x  29.90"
+        /^(.+?)\s+\d+\s*[xX]\s*(\d{1,4}[.,]\d{2})/,
+        // "29.90  Název produktu"
+        /^(\d{1,4}[.,]\d{2})\s+(.+)$/,
+      ];
+      
+      // Řádky které přeskočit
+      const skipWords = [
+        'celkem', 'total', 'suma', 'dph', 'daň',
+        'hotovost', 'karta', 'visa', 'mastercard',
+        'ičo', 'dič', 'eet', 'fik', 'bkp',
+        'děkujeme', 'vítejte', 'pokladna',
+        'sleva', 'zákaznická', 'karta'
+      ];
+      
+      lines.forEach(line => {
+        const lower = line.toLowerCase();
+        
+        // Přeskoč nesouvisející řádky
+        if (skipWords.some(w => lower.includes(w))) return;
+        if (line.length < 4) return;
+        if (/^\d+$/.test(line.replace(/\s/g, ''))) return;
+        
+        for (const pattern of patterns) {
+          const match = line.match(pattern);
+          if (match) {
+            let name, price;
+            
+            // Zjisti, co je název a co cena
+            if (isNaN(parseFloat(match[1].replace(',', '.')))) {
+              name = match[1];
+              price = match[2];
+            } else {
+              price = match[1];
+              name = match[2];
+            }
+            
+            const priceNum = parseFloat(
+              price.replace(',', '.').replace(/\s/g, '')
+            );
+            
+            // Ignoruj nereálné ceny
+            if (priceNum > 0 && priceNum < 10000) {
+              parsed.push({
+                name: cleanName(name),
+                price: priceNum,
+                category: detectCategory(name),
+                quantity: 1,
+                unit: 'ks'
+              });
+            }
+            break;
+          }
+        }
+      });
+      
+      return parsed;
+    }
+    
+    function cleanName(name) {
+      return name
+        .replace(/[\*\#\@]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 60);
+    }
+    
+    function detectCategory(name) {
+      const lower = name.toLowerCase();
+      for (const [pattern, cat] of Object.entries(CATEGORIES)) {
+        const keywords = pattern.split('|');
+        if (keywords.some(kw => lower.includes(kw))) {
+          return cat;
+        }
+      }
+      return { emoji: '📦', name: 'Ostatní' };
+    }
+    
+    // =============================================
+    // RENDER ITEMS
+    // =============================================
+    function renderItems() {
+      const container = document.getElementById('itemsContainer');
+      const list = document.getElementById('itemsList');
+      
+      container.style.display = 'block';
+      
+      let html = '';
+      items.forEach((item, i) => {
+        html += `
+          <div class="item-row" id="row_${i}">
+            <div class="category-emoji">${item.category.emoji}</div>
+            <div class="item-details">
+              <input type="text" value="${item.name}" 
+                     onchange="items[${i}].name=this.value">
+              <select class="category-select" 
+                      onchange="updateCategory(${i}, this.value)">
+                ${getCategoryOptions(item.category.name)}
+              </select>
+            </div>
+            <input type="text" class="price-input" 
+                   value="${item.price.toFixed(2)}"
+                   inputmode="decimal"
+                   onchange="updatePrice(${i}, this.value)">
+            <button class="delete-btn" 
+                    onclick="deleteItem(${i})">✕</button>
+          </div>
+        `;
+      });
+      
+      list.innerHTML = html;
+      updateTotal();
+    }
+    
+    function getCategoryOptions(selected) {
+      const cats = [
+        { emoji: '📦', name: 'Ostatní' },
+        ...Object.values(CATEGORIES)
+      ];
+      
+      // Deduplicate
+      const unique = [...new Map(cats.map(c => [c.name, c])).values()];
+      
+      return unique.map(c =>
+        `<option value="${c.name}" 
+                 ${c.name === selected ? 'selected' : ''}>
+           ${c.emoji} ${c.name}
+         </option>`
+      ).join('');
+    }
+    
+    function updateCategory(index, catName) {
+      const allCats = [
+        { emoji: '📦', name: 'Ostatní' },
+        ...Object.values(CATEGORIES)
+      ];
+      const cat = allCats.find(c => c.name === catName) 
+                  || allCats[0];
+      items[index].category = cat;
+      renderItems();
+    }
+    
+    function updatePrice(index, value) {
+      items[index].price = parseFloat(
+        value.replace(',', '.')) || 0;
+      updateTotal();
+    }
+    
+    function deleteItem(index) {
+      items.splice(index, 1);
+      renderItems();
+    }
+    
+    function addManualItem() {
+      items.push({
+        name: '',
+        price: 0,
+        category: { emoji: '📦', name: 'Ostatní' },
+        quantity: 1,
+        unit: 'ks'
+      });
+      renderItems();
+      
+      // Focus na nový řádek
+      setTimeout(() => {
+        const inputs = document.querySelectorAll(
+          '.item-details input[type="text"]'
+        );
+        inputs[inputs.length - 1].focus();
+      }, 100);
+    }
+    
+    function updateTotal() {
+      const total = items.reduce((sum, item) => 
+        sum + item.price, 0);
+      document.getElementById('totalAmount').textContent = 
+        total.toFixed(2) + ' Kč';
+    }
+    
+    // =============================================
+    // SAVE TO GOOGLE SHEETS
+    // =============================================
+    async function saveToSheets() {
+      const btn = document.getElementById('saveBtn');
+      
+      if (!selectedStore) {
+        showToast('⚠️ Vyber obchod!', '#f59e0b');
+        return;
+      }
+      
+      if (items.length === 0) {
+        showToast('⚠️ Žádné položky!', '#f59e0b');
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.textContent = '⏳ Ukládám...';
+      
+      const payload = {
+        date: document.getElementById('receiptDate').value,
+        store: selectedStore,
+        receiptId: 'R' + Date.now(),
+        items: items.map(item => ({
+          name: item.name,
+          price: item.price,
+          category: item.category.name,
+          quantity: item.quantity,
+          unit: item.unit
+        }))
+      };
+      
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Apps Script vyžaduje no-cors
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        // no-cors = nedostaneme response body,
+        // ale data se uloží
+        showToast(
+          `✅ Uloženo ${items.length} položek!`, 
+          '#22c55e'
+        );
+        
+        // Reset
+        setTimeout(() => {
+          items = [];
+          renderItems();
+          document.getElementById('itemsContainer')
+            .style.display = 'none';
+          document.getElementById('preview')
+            .style.display = 'none';
+          document.getElementById('progressBar')
+            .style.display = 'none';
+          document.getElementById('status').textContent = '';
+          document.getElementById('fileInput').value = '';
+        }, 1500);
+        
+      } catch (error) {
+        showToast('❌ Chyba: ' + error.message, '#ef4444');
+      }
+      
+      btn.disabled = false;
+      btn.textContent = '💾 Uložit do Google Sheets';
+    }
+    
+    // =============================================
+    // TOAST NOTIFICATION
+    // =============================================
+    function showToast(message, color) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.background = color;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+
+</body>
+</html>
