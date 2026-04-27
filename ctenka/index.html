@@ -574,9 +574,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            action: 'ocr',
-            imageBase64: preprocessed.base64,
-            mimeType: preprocessed.mimeType
+            action: 'ocr_space',
+            imageBase64: preprocessed.base64
           })
         });
 
