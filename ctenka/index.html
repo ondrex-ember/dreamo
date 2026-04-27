@@ -569,31 +569,62 @@
         });
       }
 
+      // ---- Poll přístup: no-cors POST → GAS zpracuje → GET poll výsledek ----
+      const jobId = 'ocr_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+
       try {
-        const gasResponse = await fetch(GOOGLE_SCRIPT_URL, {
+        // 1) Odešli job — no-cors, text/plain → žádný preflight
+        await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
             action: 'ocr_space',
+            jobId: jobId,
             imageBase64: preprocessed.base64
           })
         });
 
-        const gasData = await gasResponse.json();
+        // 2) Poll doGet každé 2s max 20x (40s timeout)
+        status.textContent = '⏳ OCRSpace zpracovává...';
+        let ocrText = null;
 
-        if (gasData.status === 'ok' && gasData.text) {
+        for (let attempt = 0; attempt < 20; attempt++) {
+          await new Promise(r => setTimeout(r, 2000));
+          progressFill.style.width = (85 + attempt * 0.75) + '%';
+          status.textContent = `⏳ OCRSpace zpracovává... (${attempt * 2}s)`;
+
+          try {
+            const pollRes = await fetch(
+              GOOGLE_SCRIPT_URL + '?action=poll&jobId=' + jobId,
+              { method: 'GET' }
+            );
+            const pollData = await pollRes.json();
+
+            if (pollData.status === 'ok' && pollData.text) {
+              ocrText = pollData.text;
+              break;
+            } else if (pollData.status === 'error') {
+              throw new Error(pollData.message || 'OCRSpace chyba');
+            }
+            // status === 'pending' → pokračuj
+          } catch (pollErr) {
+            // Síťová chyba při pollu — zkus znovu
+          }
+        }
+
+        if (ocrText) {
           progressFill.style.width = '100%';
-          const parsedItems = parseReceiptText(gasData.text);
+          const parsedItems = parseReceiptText(ocrText);
           status.textContent = `✅ OCRSpace — nalezeno ${parsedItems.length} položek ↓`;
           items = parsedItems;
           renderItems();
         } else {
-          throw new Error(gasData.message || 'OCRSpace vrátil prázdný výsledek');
+          throw new Error('Timeout — GAS neodpověděl do 40s');
         }
 
       } catch (err) {
         progressFill.style.width = '100%';
-        // Jako záchrana zobrazíme co Tesseract aspoň dostal
         if (tesseractText) {
           const fallbackItems = parseReceiptText(tesseractText);
           status.textContent = `⚠️ OCRSpace selhal — zobrazuji Tesseract výsledek (zkontroluj ručně)`;
