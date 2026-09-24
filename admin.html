@@ -194,6 +194,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--i
     <button class="tab" onclick="showTab('missing')">⚠️ Chybějící</button>
     <button class="tab" onclick="showTab('analytics')">📈 Analytika</button>
     <button class="tab" onclick="showTab('export')">📤 Export / Import</button>
+    <button class="tab" onclick="showTab('jsoneditor')">📁 JSON Editor</button>
   </div>
 
   <!-- TAB: STATS -->
@@ -354,10 +355,184 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--i
     </div>
     <div id="csvPreview" style="margin-top:16px"></div>
   </div>
-</div>
+  <!-- TAB: JSON EDITOR -->
+  <div class="tab-content" id="tab-jsoneditor">
+
+    <div id="jsonAlert" class="alert"></div>
+
+    <!-- SEKCE 1: Načíst JSON -->
+    <div class="section-title">1 — Načíst data.json</div>
+    <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">
+      Nahraj aktuální <span class="mono">data.json</span> ze svého projektu. Vše ostatní v tomto tabu funguje nad načtenými daty in-memory.
+    </p>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+      <input type="file" id="jsonFileInput" accept=".json"
+        style="font-size:13px;color:var(--ink2)" onchange="loadJsonFile(this)">
+      <button class="btn btn-ghost" onclick="document.getElementById('jsonFileInput').click()">📂 Vybrat soubor</button>
+    </div>
+    <div id="jsonStats" style="display:none">
+      <div class="stat-grid" id="jsonStatCards" style="margin-bottom:0"></div>
+    </div>
+
+    <!-- SEKCE 2: Přidat ingredienci -->
+    <div class="section-title" id="jsonSecIng" style="margin-top:32px;opacity:.35">2 — Přidat ingredienci</div>
+    <div id="jsonIngForm" style="pointer-events:none;opacity:.35">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Název</label>
+          <input type="text" class="form-input" id="jIngName" placeholder="Krůtí prsa">
+        </div>
+        <div class="form-field">
+          <label>Kategorie</label>
+          <select class="form-input" id="jIngCat" style="min-width:160px"></select>
+        </div>
+        <div class="form-field">
+          <label>Emoji</label>
+          <input type="text" class="form-input" id="jIngEmoji" placeholder="🦃" style="width:72px">
+        </div>
+        <div class="form-field">
+          <label>Tagy</label>
+          <input type="text" class="form-input" id="jIngTags" placeholder="gluten-free">
+        </div>
+        <button class="btn btn-primary" onclick="jsonAddIngredient()">+ Přidat ingredienci</button>
+      </div>
+      <div id="jsonIngAdded" style="font-size:12px;color:#4A9470;min-height:18px"></div>
+    </div>
+
+    <!-- SEKCE 3: Přidat recept -->
+    <div class="section-title" id="jsonSecRec" style="margin-top:32px;opacity:.35">3 — Přidat recept</div>
+    <div id="jsonRecForm" style="pointer-events:none;opacity:.35">
+
+      <!-- Toggle single / bulk -->
+      <div style="display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;width:fit-content">
+        <button class="btn" id="toggleSingle" onclick="setRecipeMode('single')"
+          style="border-radius:0;border:none;background:var(--accent);color:#fff;padding:7px 20px">Jeden recept</button>
+        <button class="btn" id="toggleBulk" onclick="setRecipeMode('bulk')"
+          style="border-radius:0;border:none;background:var(--surface2);color:var(--ink2);padding:7px 20px">Bulk JSON paste</button>
+      </div>
+
+      <!-- SINGLE RECIPE FORM -->
+      <div id="singleRecipeForm">
+        <div class="form-row">
+          <div class="form-field" style="flex:2">
+            <label>Název receptu</label>
+            <input type="text" class="form-input" id="jRecName" placeholder="Krůtí prsa na bylinkách">
+          </div>
+          <div class="form-field">
+            <label>Kategorie</label>
+            <select class="form-input" id="jRecCat" style="min-width:160px"></select>
+          </div>
+          <div class="form-field">
+            <label>Obtížnost</label>
+            <select class="form-input" id="jRecDiff">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Čas (min)</label>
+            <input type="number" class="form-input" id="jRecTime" placeholder="30" style="width:80px">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field" style="flex:1">
+            <label>Ingredience — každá na nový řádek</label>
+            <textarea class="form-input" id="jRecIng" rows="5"
+              placeholder="Krůtí prsa&#10;Česnek&#10;Olivový olej&#10;Rozmarýn&#10;Sůl"
+              style="font-family:'DM Mono',monospace;font-size:12px;resize:vertical"></textarea>
+          </div>
+          <div class="form-field" style="flex:1">
+            <label>Postup — každý krok na nový řádek</label>
+            <textarea class="form-input" id="jRecSteps" rows="5"
+              placeholder="Maso osolte a opepřete.&#10;Rozpalte pánev s olejem.&#10;Opečte prsa 4 minuty z každé strany.&#10;Přidejte česnek a rozmarýn.&#10;Servírujte."
+              style="font-family:'DM Mono',monospace;font-size:12px;resize:vertical"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field" style="flex:2">
+            <label>Popis (jedna věta)</label>
+            <input type="text" class="form-input" id="jRecDesc" placeholder="Šťavnatá krůtí prsa s čerstvými bylinkami — rychlá večeře.">
+          </div>
+          <div class="form-field" style="flex:1">
+            <label>KeyIngredients — každý na nový řádek</label>
+            <textarea class="form-input" id="jRecKey" rows="2"
+              placeholder="Krůtí prsa"
+              style="font-family:'DM Mono',monospace;font-size:12px;resize:vertical"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row" style="align-items:center;gap:16px">
+          <span style="font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em">Tagy:</span>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="jTagVegan"> vegan
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="jTagVeg"> vegetarian
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="jTagGf" checked> gluten-free
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="jTagPesc"> pescatarian
+          </label>
+        </div>
+
+        <button class="btn btn-primary" onclick="jsonAddSingleRecipe()">+ Přidat recept</button>
+        <div id="jsonRecAdded" style="font-size:12px;color:#4A9470;margin-top:8px;min-height:18px"></div>
+      </div>
+
+      <!-- BULK PASTE -->
+      <div id="bulkRecipeForm" style="display:none">
+        <p style="font-size:13px;color:var(--ink2);margin-bottom:12px">
+          Vlož JSON array receptů ve správné struktuře. ID se auto-přidělí, existující ID budou přeskočena.<br>
+          Minimální struktura: <span class="mono">name, category, ingredients[], steps[], time, difficulty</span>
+        </p>
+        <textarea class="form-input" id="jBulkPaste" rows="12"
+          placeholder='[
+  {
+    "name": "Krůtí prsa na bylinkách",
+    "category": "Domácí kuchyně",
+    "ingredients": ["Krůtí prsa", "Česnek", "Olivový olej"],
+    "steps": ["Maso osolte.", "Opečte 4 minuty.", "Servírujte."],
+    "time": "30",
+    "difficulty": "easy",
+    "tags": ["gluten-free"],
+    "description": "Rychlá večeře.",
+    "keyIngredients": ["Krůtí prsa"]
+  }
+]'
+          style="font-family:'DM Mono',monospace;font-size:12px;resize:vertical;width:100%;margin-bottom:12px"></textarea>
+
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-ghost" onclick="validateBulkJson()">🔍 Validovat</button>
+          <button class="btn btn-primary" id="jBulkImportBtn" onclick="jsonBulkImport()" disabled>⬆ Importovat do dat</button>
+          <span id="jBulkStatus" style="font-size:12px;color:var(--ink2)"></span>
+        </div>
+        <div id="jBulkPreview" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- SEKCE 4: Export -->
+    <div class="section-title" id="jsonSecExp" style="margin-top:32px;opacity:.35">4 — Export upraveného data.json</div>
+    <div id="jsonExportArea" style="pointer-events:none;opacity:.35">
+      <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">
+        Stáhne aktuální in-memory stav jako <span class="mono">data.json</span> s přepočítaným <span class="mono">_meta</span> (totalRecipes, totalIngredients, exportedAt).
+      </p>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="jsonExport()">⬇ Stáhnout data.json</button>
+        <div id="jsonExportMeta" style="font-size:12px;color:var(--ink2)"></div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- end adminApp -->
 
 <script>
-const GAS_URL = '<?= ScriptApp.getService().getUrl() ?>';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwXSU1v9CVdiE7Va-GiwEFfSYf10y4mKmdvEpBnH9pfooOHu3uMIFj1f4GkfKVXJodB/exec';
 let ADMIN_PASS = '';
 let csvData    = null;
 
@@ -811,7 +986,258 @@ function renderThinRecipes(data) {
   : '<tr><td colspan="5" class="empty-state"><strong>Vše OK</strong>Všechny recepty mají 4+ ingrediencí.</td></tr>';
 }
 
-// ── HELPERS ────────────────────────────────────────────────
+// ── JSON EDITOR ────────────────────────────────────────────
+let jsonDb = null; // in-memory loaded data.json
+
+function loadJsonFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      jsonDb = JSON.parse(e.target.result);
+      jsonActivateEditor();
+    } catch(err) {
+      showAlert('jsonAlert', 'error', 'Chyba při parsování JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function jsonActivateEditor() {
+  // Stats
+  const totalRec = (jsonDb.recipes || []).length;
+  const ingCats  = jsonDb.ingredients || {};
+  const totalIng = Object.values(ingCats).reduce((s, arr) => s + arr.length, 0);
+  const catNames = Object.keys(ingCats);
+
+  document.getElementById('jsonStats').style.display = 'block';
+  document.getElementById('jsonStatCards').innerHTML = `
+    <div class="stat-card green"><div class="val">${totalRec}</div><div class="lbl">Receptů načteno</div></div>
+    <div class="stat-card green"><div class="val">${totalIng}</div><div class="lbl">Ingrediencí načteno</div></div>
+    <div class="stat-card amber"><div class="val">${catNames.length}</div><div class="lbl">Kategorií ingrediencí</div></div>
+    <div class="stat-card amber"><div class="val">${jsonDb._meta ? jsonDb._meta.version || '—' : '—'}</div><div class="lbl">Verze datasetu</div></div>
+  `;
+
+  // Populate category selects
+  const ingCatSelect = document.getElementById('jIngCat');
+  const recCatSelect = document.getElementById('jRecCat');
+  ingCatSelect.innerHTML = catNames.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  // Recipe categories from existing recipes
+  const recCats = [...new Set((jsonDb.recipes || []).map(r => r.category))].sort((a,b) => a.localeCompare(b,'cs'));
+  recCatSelect.innerHTML = recCats.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  // Enable sections
+  ['jsonIngForm','jsonRecForm','jsonExportArea'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.opacity = '1';
+    el.style.pointerEvents = 'auto';
+  });
+  ['jsonSecIng','jsonSecRec','jsonSecExp'].forEach(id => {
+    document.getElementById(id).style.opacity = '1';
+  });
+
+  updateExportMeta();
+  showAlert('jsonAlert', 'success', 'data.json načten — ' + totalRec + ' receptů, ' + totalIng + ' ingrediencí.');
+}
+
+function jsonAddIngredient() {
+  if (!jsonDb) return;
+  const name  = document.getElementById('jIngName').value.trim();
+  const cat   = document.getElementById('jIngCat').value;
+  const emoji = document.getElementById('jIngEmoji').value.trim();
+  const tags  = document.getElementById('jIngTags').value.trim()
+    .split(',').map(t => t.trim()).filter(Boolean);
+
+  if (!name) { showAlert('jsonAlert', 'error', 'Zadej název ingredience.'); return; }
+
+  // Duplicate check
+  const allIng = Object.values(jsonDb.ingredients || {}).flat();
+  if (allIng.some(i => i.name.toLowerCase() === name.toLowerCase())) {
+    showAlert('jsonAlert', 'error', 'Ingredience "' + name + '" už existuje.');
+    return;
+  }
+
+  if (!jsonDb.ingredients[cat]) jsonDb.ingredients[cat] = [];
+  jsonDb.ingredients[cat].push({ name, emoji, tags });
+
+  document.getElementById('jIngName').value  = '';
+  document.getElementById('jIngEmoji').value = '';
+  document.getElementById('jIngTags').value  = '';
+  document.getElementById('jsonIngAdded').textContent = '✓ Přidáno: ' + name + ' → ' + cat;
+  updateExportMeta();
+}
+
+function setRecipeMode(mode) {
+  const isSingle = mode === 'single';
+  document.getElementById('singleRecipeForm').style.display = isSingle ? 'block' : 'none';
+  document.getElementById('bulkRecipeForm').style.display   = isSingle ? 'none'  : 'block';
+  document.getElementById('toggleSingle').style.background  = isSingle ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('toggleSingle').style.color       = isSingle ? '#fff' : 'var(--ink2)';
+  document.getElementById('toggleBulk').style.background    = isSingle ? 'var(--surface2)' : 'var(--accent)';
+  document.getElementById('toggleBulk').style.color         = isSingle ? 'var(--ink2)' : '#fff';
+}
+
+function jsonNextId() {
+  const recipes = jsonDb.recipes || [];
+  if (!recipes.length) return 'R1';
+  const nums = recipes.map(r => parseInt((r.id || '').replace(/\D/g,''))).filter(n => !isNaN(n));
+  return 'R' + (Math.max(...nums, 0) + 1);
+}
+
+function jsonAddSingleRecipe() {
+  if (!jsonDb) return;
+  const name  = document.getElementById('jRecName').value.trim();
+  const cat   = document.getElementById('jRecCat').value;
+  const diff  = document.getElementById('jRecDiff').value;
+  const time  = document.getElementById('jRecTime').value.trim();
+  const desc  = document.getElementById('jRecDesc').value.trim();
+  const ingRaw   = document.getElementById('jRecIng').value.trim();
+  const stepsRaw = document.getElementById('jRecSteps').value.trim();
+  const keyRaw   = document.getElementById('jRecKey').value.trim();
+
+  if (!name || !ingRaw || !stepsRaw) {
+    showAlert('jsonAlert', 'error', 'Vyplň aspoň Název, Ingredience a Postup.');
+    return;
+  }
+
+  const tags = [];
+  if (document.getElementById('jTagVegan').checked)  tags.push('vegan');
+  if (document.getElementById('jTagVeg').checked)    tags.push('vegetarian');
+  if (document.getElementById('jTagGf').checked)     tags.push('gluten-free');
+  if (document.getElementById('jTagPesc').checked)   tags.push('pescatarian');
+
+  const recipe = {
+    id:             jsonNextId(),
+    name,
+    category:       cat,
+    ingredients:    ingRaw.split('\n').map(s => s.trim()).filter(Boolean),
+    steps:          stepsRaw.split('\n').map(s => s.trim()).filter(Boolean),
+    time:           time || '30',
+    difficulty:     diff,
+    tags,
+    description:    desc,
+    keyIngredients: keyRaw.split('\n').map(s => s.trim()).filter(Boolean),
+  };
+
+  if (!jsonDb.recipes) jsonDb.recipes = [];
+  jsonDb.recipes.push(recipe);
+
+  // Clear form
+  ['jRecName','jRecTime','jRecDesc','jRecIng','jRecSteps','jRecKey'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('jsonRecAdded').textContent = '✓ Přidán recept: ' + name + ' (' + recipe.id + ')';
+  updateExportMeta();
+}
+
+function validateBulkJson() {
+  const raw = document.getElementById('jBulkPaste').value.trim();
+  const statusEl  = document.getElementById('jBulkStatus');
+  const previewEl = document.getElementById('jBulkPreview');
+  const importBtn = document.getElementById('jBulkImportBtn');
+
+  try {
+    const parsed = JSON.parse(raw);
+    const arr    = Array.isArray(parsed) ? parsed : [parsed];
+    const valid  = arr.filter(r => r.name && r.ingredients && r.steps);
+    const invalid = arr.length - valid.length;
+
+    statusEl.style.color = '#4A9470';
+    statusEl.textContent = '✓ ' + valid.length + ' platných receptů' + (invalid ? ', ' + invalid + ' bez povinných polí (přeskočeny)' : '');
+
+    previewEl.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:8px">
+        <div style="font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Preview (prvních 3)</div>
+        ${valid.slice(0,3).map(r => `
+          <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+            <strong>${r.name}</strong>
+            <span class="mono" style="margin-left:8px;font-size:11px">${r.category || '?'}</span>
+            <span style="font-size:11px;color:var(--ink2);margin-left:8px">${(r.ingredients||[]).length} ingr. · ${r.time || '?'} min</span>
+          </div>`).join('')}
+        ${valid.length > 3 ? `<div style="font-size:12px;color:var(--ink2);padding-top:8px">… a dalších ${valid.length - 3} receptů</div>` : ''}
+      </div>`;
+
+    importBtn.disabled = valid.length === 0;
+    importBtn._validRecipes = valid;
+  } catch(err) {
+    statusEl.style.color = 'var(--accent)';
+    statusEl.textContent = '✗ Chyba JSON: ' + err.message;
+    previewEl.innerHTML  = '';
+    importBtn.disabled   = true;
+  }
+}
+
+function jsonBulkImport() {
+  if (!jsonDb) return;
+  const importBtn = document.getElementById('jBulkImportBtn');
+  const valid     = importBtn._validRecipes || [];
+  if (!valid.length) return;
+
+  if (!jsonDb.recipes) jsonDb.recipes = [];
+  const existingNames = new Set(jsonDb.recipes.map(r => r.name.toLowerCase()));
+  let added = 0, skipped = 0;
+
+  valid.forEach(r => {
+    if (existingNames.has(r.name.toLowerCase())) { skipped++; return; }
+    jsonDb.recipes.push({
+      id:             jsonNextId(),
+      name:           r.name,
+      category:       r.category || 'Ostatní',
+      ingredients:    r.ingredients || [],
+      steps:          r.steps || [],
+      time:           String(r.time || '30'),
+      difficulty:     r.difficulty || 'medium',
+      tags:           r.tags || [],
+      description:    r.description || '',
+      keyIngredients: r.keyIngredients || [],
+    });
+    existingNames.add(r.name.toLowerCase());
+    added++;
+  });
+
+  document.getElementById('jBulkStatus').textContent = '✓ Importováno: ' + added + ', přeskočeno (duplicit): ' + skipped;
+  document.getElementById('jBulkStatus').style.color = '#4A9470';
+  document.getElementById('jBulkPaste').value = '';
+  document.getElementById('jBulkPreview').innerHTML = '';
+  importBtn.disabled = true;
+  updateExportMeta();
+  showAlert('jsonAlert', 'success', 'Bulk import hotov — přidáno ' + added + ' receptů.');
+}
+
+function updateExportMeta() {
+  if (!jsonDb) return;
+  const totalRec = (jsonDb.recipes || []).length;
+  const totalIng = Object.values(jsonDb.ingredients || {}).reduce((s,a) => s + a.length, 0);
+  document.getElementById('jsonExportMeta').textContent =
+    totalRec + ' receptů · ' + totalIng + ' ingrediencí · připraveno ke stažení';
+}
+
+function jsonExport() {
+  if (!jsonDb) return;
+  const totalRec = (jsonDb.recipes || []).length;
+  const totalIng = Object.values(jsonDb.ingredients || {}).reduce((s,a) => s + a.length, 0);
+
+  // Rebuild _meta
+  jsonDb._meta = Object.assign(jsonDb._meta || {}, {
+    version:          jsonDb._meta ? jsonDb._meta.version || '1.0.0' : '1.0.0',
+    exportedAt:       new Date().toISOString(),
+    totalRecipes:     totalRec,
+    totalIngredients: totalIng,
+    collections:      ['ingredients','recipes'],
+  });
+
+  const blob = new Blob([JSON.stringify(jsonDb, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showAlert('jsonAlert', 'success', 'data.json stažen — ' + totalRec + ' receptů, ' + totalIng + ' ingrediencí.');
+}
+
 function showAlert(id, type, msg) {
   const el = document.getElementById(id);
   el.className  = 'alert alert-' + (type === 'success' ? 'success' : 'error') + ' show';
