@@ -153,6 +153,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--i
 .alert.show { display: block; }
 .alert-success { background: rgba(58,117,88,.15); border: 1px solid rgba(58,117,88,.3); color: #4A9470; }
 .alert-error   { background: rgba(192,78,56,.15); border: 1px solid rgba(192,78,56,.3); color: var(--accent); }
+.alert-info    { background: rgba(217,119,6,.12);  border: 1px solid rgba(217,119,6,.3);  color: #d97706; }
 
 /* ── LOADING ── */
 .loader { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--ink2); border-radius: 50%; animation: spin .6s linear infinite; }
@@ -995,7 +996,23 @@ function loadJsonFile(input) {
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      jsonDb = JSON.parse(e.target.result);
+      const parsed = JSON.parse(e.target.result);
+
+      // Extractor format: bare array of {nazev, ingredience, postup, ...}
+      if (Array.isArray(parsed)) {
+        // Convert to Dreamo structure so editor works
+        const converted = parsed.map(r => normalizeExtractorRecipe(r)).filter(r => r && r.name);
+        jsonDb = {
+          _meta: { version: 'extractor-import', exportedAt: new Date().toISOString() },
+          ingredients: {},
+          recipes: converted,
+        };
+        showAlert('jsonAlert', 'info', '⚠ Načten formát extraktoru — převedeno ' + converted.length + ' receptů. Pro plnou funkci načti Dreamo data.json.');
+      } else {
+        // Dreamo format: {_meta, ingredients, recipes}
+        jsonDb = parsed;
+      }
+
       jsonActivateEditor();
     } catch(err) {
       showAlert('jsonAlert', 'error', 'Chyba při parsování JSON: ' + err.message);
@@ -1313,7 +1330,7 @@ function jsonExport() {
 
 function showAlert(id, type, msg) {
   const el = document.getElementById(id);
-  el.className  = 'alert alert-' + (type === 'success' ? 'success' : 'error') + ' show';
+  el.className  = 'alert alert-' + (type === 'success' ? 'success' : type === 'info' ? 'info' : 'error') + ' show';
   el.textContent = msg;
   setTimeout(() => { el.classList.remove('show'); }, 4000);
 }
