@@ -1,8 +1,8 @@
 {
   "_meta": {
     "version": "1.0.0",
-    "exportedAt": "2026-09-25T16:36:50.849Z",
-    "totalRecipes": 759,
+    "exportedAt": "2026-09-25T16:42:58.000Z",
+    "totalRecipes": 771,
     "totalIngredients": 125,
     "collections": [
       "ingredients",
@@ -26874,6 +26874,393 @@
         "Tuňák v konzervě",
         "Tvaroh"
       ]
+    },
+    {
+      "name": "Krůtí prsa na bylinkách s česnekem",
+      "category": "Smažená a pečená masa",
+      "ingredients": [
+        "Krůtí prsa",
+        "Česnek",
+        "Olivový olej",
+        "Rozmarýn",
+        "Tymián",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Krůtí prsa nakrájejte na plátky silné asi 1,5 cm a zlehka naklepejte.",
+        "Potřete olivovým olejem, osolte, opepřete a posypte nasekaným rozmarýnem a tymiánem.",
+        "Na rozehřáté pánvi opečte prsa 3–4 minuty z každé strany dozlatova.",
+        "Přidejte rozmáčknutý česnek, přiklopte pokličkou a nechte dojít na mírném ohni 2 minuty.",
+        "Nechte minutu odpočinout, pak podávejte."
+      ],
+      "time": "20",
+      "difficulty": "easy",
+      "tags": [
+        "gluten-free",
+        "high-protein"
+      ],
+      "description": "Šťavnatá krůtí prsa s česnekem a bylinkami — rychlá a lehká večeře.",
+      "keyIngredients": [
+        "Krůtí prsa"
+      ],
+      "id": "R761"
+    },
+    {
+      "name": "Krůtí na paprikách",
+      "category": "Dušená jídla a guláše",
+      "ingredients": [
+        "Krůtí prsa",
+        "Paprika červená",
+        "Paprika zelená",
+        "Cibule",
+        "Olivový olej",
+        "Mletá sladká paprika",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Krůtí maso, cibuli a papriky nakrájejte na menší kousky.",
+        "Cibuli zpěňte na oleji do sklovita, přidejte maso a restujte, dokud se nezatáhne.",
+        "Přidejte papriky, mletou paprikou, osolte a opepřete.",
+        "Podlijte trochou vody, přikryjte a duste na mírném ohni 15 minut.",
+        "Občas promíchejte a podle potřeby dolijte vodu. Podávejte s rýží nebo chlebem."
+      ],
+      "time": "30",
+      "difficulty": "easy",
+      "tags": [
+        "gluten-free"
+      ],
+      "description": "Jednoduchý krůtí výpek s paprikami — rychlý a syný oběd.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Paprika červená"
+      ],
+      "id": "R762"
+    },
+    {
+      "name": "Krůtí vývar s nudlemi",
+      "category": "Polévky a vývary",
+      "ingredients": [
+        "Krůtí stehno",
+        "Mrkev",
+        "Celer",
+        "Petržel",
+        "Cibule",
+        "Pórek",
+        "Těstoviny",
+        "Nové koření",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Krůtí stehno vložte do hrnce, zalijte 2 litry studené vody a přiveďte k varu.",
+        "Sbírejte pěnu, pak přidejte nakrájenou zeleninu a koření.",
+        "Vařte na mírném ohni 2,5–3 hodiny, až je maso měkké.",
+        "Vývar sceďte přes jemné sítko, maso oberte a natrhejte na vlákna.",
+        "V čistém vývaru uvařte těstoviny, přidejte maso a podávejte s petrželí."
+      ],
+      "time": "180",
+      "difficulty": "medium",
+      "tags": [],
+      "description": "Poctivý krůtí vývar s nudlemi — jako od babičky.",
+      "keyIngredients": [
+        "Krůtí stehno"
+      ],
+      "id": "R763"
+    },
+    {
+      "name": "Krůtí burger s avokádem",
+      "category": "Rychlé večeře do 20 minut",
+      "ingredients": [
+        "Krůtí mleté maso",
+        "Avokádo",
+        "Cibule",
+        "Česnek",
+        "Vejce",
+        "Strouhanka",
+        "Salát",
+        "Rajče",
+        "Houska",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Mleté krůtí maso smíchejte s vejcem, nasekanou cibulí, česnekem, strouhankou, solí a pepřem.",
+        "Vytvarujte 2 placky a opečte je na pánvi s trochou oleje 4–5 minut z každé strany.",
+        "Avokádo rozmačkejte vidličkou, osolte a přidejte citronovou šťávu.",
+        "Housku opečte, potřete avokádovou pastou a sestavte burger se salátem, rajčetem a masovou plackou."
+      ],
+      "time": "20",
+      "difficulty": "easy",
+      "tags": [],
+      "description": "Lehčí varianta burgeru z mletého krůtího masa s krémovým avokádem.",
+      "keyIngredients": [
+        "Krůtí mleté maso",
+        "Avokádo"
+      ],
+      "id": "R764"
+    },
+    {
+      "name": "Zapečená krůtí prsa se zeleninou",
+      "category": "Nedělní obědy a pečeně",
+      "ingredients": [
+        "Krůtí prsa",
+        "Brambory",
+        "Mrkev",
+        "Cuketa",
+        "Cibule",
+        "Česnek",
+        "Olivový olej",
+        "Rozmarýn",
+        "Tymián",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Troubu předehřejte na 200 °C. Zeleninu a brambory nakrájejte na větší kousky.",
+        "Zeleninu dejte do pekáče, polijte olejem, osolte a opepřete.",
+        "Krůtí prsa osolte, opepřete, potřete olejem a bylinkami, položte na zeleninu.",
+        "Pečte přikryté alobalem 40 minut, pak odkryjte a pečte dalších 20 minut dozlatova.",
+        "Nechte 5 minut odpočinout a servírujte přímo z pekáče."
+      ],
+      "time": "70",
+      "difficulty": "easy",
+      "tags": [
+        "gluten-free"
+      ],
+      "description": "Snadná nedělní pečeně — krůtí prsa se vším na jednom plechu.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Brambory"
+      ],
+      "id": "R765"
+    },
+    {
+      "name": "Krůtí stir-fry s brokolicí a sójou",
+      "category": "Asijská kuchyně",
+      "ingredients": [
+        "Krůtí prsa",
+        "Brokolice",
+        "Paprika červená",
+        "Česnek",
+        "Zázvor",
+        "Sójová omáčka",
+        "Sezamový olej",
+        "Rýže"
+      ],
+      "steps": [
+        "Krůtí maso nakrájejte na tenké proužky, marinujte v sójové omáčce 10 minut.",
+        "Na rozehřátém woku nebo velké pánvi restujte maso na vysokém ohni 3 minuty.",
+        "Přidejte nalámanou brokolici, paprikové proužky, česnek a zázvor.",
+        "Restujte dalších 4–5 minut za stálého míchání, až je zelenina křupavá.",
+        "Na závěr zakápněte sezamovým olejem. Servírujte s rýží."
+      ],
+      "time": "25",
+      "difficulty": "easy",
+      "tags": [
+        "gluten-free"
+      ],
+      "description": "Rychlé asijské krůtí stir-fry — lehké, výživné a plné chutí.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Brokolice"
+      ],
+      "id": "R766"
+    },
+    {
+      "name": "Krůtí svíčková na smetaně",
+      "category": "Česká a moravská kuchyně",
+      "ingredients": [
+        "Krůtí prsa",
+        "Mrkev",
+        "Petržel",
+        "Celer",
+        "Cibule",
+        "Smetana ke vaření",
+        "Máslo",
+        "Ocet",
+        "Cukr",
+        "Bobkový list",
+        "Nové koření",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Krůtí prsa špalkem osolte, opepřete a ze všech stran opečte na másle dozlatova.",
+        "Přidejte nakrájenou zeleninu, bobkový list, nové koření, podlijte vývarem a duste 45 minut.",
+        "Maso vyndejte, zeleninu se šťávou rozmixujte dohladka.",
+        "Přidejte smetanu, ocet a cukr, dochuťte a provařte na požadovanou konzistenci.",
+        "Maso nakrájejte na plátky, přelijte omáčkou. Podávejte s knedlíkem a brusinkami."
+      ],
+      "time": "70",
+      "difficulty": "medium",
+      "tags": [],
+      "description": "Lehčí česká klasika — krůtí svíčková se smetanovou omáčkou místo hovězí.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Smetana ke vaření"
+      ],
+      "id": "R767"
+    },
+    {
+      "name": "Krůtí maso v kokosovém kari",
+      "category": "Indická kuchyně",
+      "ingredients": [
+        "Krůtí prsa",
+        "Kokosové mléko",
+        "Rajčata",
+        "Cibule",
+        "Česnek",
+        "Zázvor",
+        "Kari koření",
+        "Kurkuma",
+        "Koriandr",
+        "Olivový olej",
+        "Rýže"
+      ],
+      "steps": [
+        "Cibuli, česnek a zázvor osmahněte na oleji do zlatova.",
+        "Přidejte kari, kurkumu a restujte 1 minutu, aby se koření rozvonělo.",
+        "Přidejte nakrájená rajčata a vařte 5 minut, pak přidejte krůtí maso na kostky.",
+        "Zalijte kokosovým mlékem, osolte a vařte na mírném ohni 20 minut.",
+        "Posypte koriandrem a podávejte s basmati rýží."
+      ],
+      "time": "35",
+      "difficulty": "medium",
+      "tags": [
+        "gluten-free"
+      ],
+      "description": "Voňavé krůtí kari s kokosovým mlékem — jemné a aromatické.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Kokosové mléko"
+      ],
+      "id": "R768"
+    },
+    {
+      "name": "Krůtí wrapy s čerstvou zeleninou",
+      "category": "Rychlé večeře do 20 minut",
+      "ingredients": [
+        "Krůtí prsa",
+        "Tortilla wrap",
+        "Salát",
+        "Rajče",
+        "Okurka",
+        "Paprika červená",
+        "Řecký jogurt",
+        "Česnek",
+        "Citrón",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Krůtí prsa osolte, opepřete a opečte na pánvi 3–4 minuty z každé strany, pak nakrájejte na proužky.",
+        "Řecký jogurt smíchejte s prolisovaným česnekem a citronovou šťávou.",
+        "Tortillu potřete jogurtovou omáčkou.",
+        "Přidejte salát, rajče, okurku a papriku nakrájené na proužky.",
+        "Přidejte krůtí maso, pevně srolujte a případně přepůlte. Podávejte okamžitě."
+      ],
+      "time": "15",
+      "difficulty": "easy",
+      "tags": [],
+      "description": "Svěží krůtí wrap s jogurtovou omáčkou — ideální oběd nebo rychlá večeře.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Tortilla wrap"
+      ],
+      "id": "R769"
+    },
+    {
+      "name": "Pečená krůtí stehna na česneku a víně",
+      "category": "Nedělní obědy a pečeně",
+      "ingredients": [
+        "Krůtí stehno",
+        "Česnek",
+        "Bílé víno",
+        "Olivový olej",
+        "Rozmarýn",
+        "Tymián",
+        "Brambory",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Troubu předehřejte na 180 °C. Stehna osolte, opepřete a potřete olejem s bylinkami.",
+        "Vložte do pekáče, přidejte rozkrájené brambory a prolisovaný česnek.",
+        "Zalijte bílým vínem, přikryjte alobalem a pečte 60 minut.",
+        "Alobal odkryjte a pečte dalších 25–30 minut, dokud kůže nezezlátne.",
+        "Podávejte s výpekem přelévaným přes brambory."
+      ],
+      "time": "100",
+      "difficulty": "easy",
+      "tags": [
+        "gluten-free"
+      ],
+      "description": "Šťavnatá krůtí stehna pečená s česnekem a bílým vínem — sváteční nedělní oběd.",
+      "keyIngredients": [
+        "Krůtí stehno",
+        "Bílé víno"
+      ],
+      "id": "R770"
+    },
+    {
+      "name": "Krůtí polévka s rýží a kurkumou",
+      "category": "Polévky a vývary",
+      "ingredients": [
+        "Krůtí prsa",
+        "Rýže",
+        "Mrkev",
+        "Cibule",
+        "Česnek",
+        "Kurkuma",
+        "Vývar kuřecí",
+        "Olivový olej",
+        "Petržel",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Krůtí maso nakrájejte na malé kousky, cibuli a mrkev na kostičky.",
+        "V hrnci osmahněte cibuli na oleji, přidejte česnek a kurkumu, restujte minutu.",
+        "Přidejte mrkev a maso, restujte 3 minuty.",
+        "Zalijte vývarem, přivedite k varu a vařte 15 minut.",
+        "Přidejte propláchnutou rýži a vařte dalších 15 minut. Dochuťte, posypte petrželí."
+      ],
+      "time": "40",
+      "difficulty": "easy",
+      "tags": [
+        "gluten-free"
+      ],
+      "description": "Výživná zlatá polévka s krůtím masem, rýží a kurkumou.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Kurkuma"
+      ],
+      "id": "R771"
+    },
+    {
+      "name": "Krůtí řízek s bramborovým salátem",
+      "category": "Česká a moravská kuchyně",
+      "ingredients": [
+        "Krůtí prsa",
+        "Vejce",
+        "Strouhanka",
+        "Hladká mouka",
+        "Olej",
+        "Brambory",
+        "Majonéza",
+        "Okurka",
+        "Hořčice",
+        "Sůl & pepř"
+      ],
+      "steps": [
+        "Krůtí prsa nakrájejte na plátky, naklepejte, osolte a opepřete.",
+        "Obalujte v mouce, rozšlehaném vejci a strouhance.",
+        "Smažte na rozpáleném oleji dozlatova z obou stran, asi 3–4 minuty.",
+        "Uvařené brambory nakrájejte, smíchejte s majonézou, hořčicí a nakrájenou okurkou.",
+        "Podávejte řízky s bramborovým salátem a plátkem citronu."
+      ],
+      "time": "40",
+      "difficulty": "medium",
+      "tags": [],
+      "description": "Klasický český řízek z krůtích prs — lehčí než vepřový, stejně dobrý.",
+      "keyIngredients": [
+        "Krůtí prsa",
+        "Strouhanka"
+      ],
+      "id": "R772"
     }
   ]
 }
