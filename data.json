@@ -1,9 +1,9 @@
 {
   "_meta": {
     "version": "1.0.0",
-    "exportedAt": "2026-04-01T15:40:49.959Z",
+    "exportedAt": "2026-09-25T16:36:50.849Z",
     "totalRecipes": 759,
-    "totalIngredients": 122,
+    "totalIngredients": 125,
     "collections": [
       "ingredients",
       "recipes"
@@ -315,6 +315,21 @@
         "tags": [
           "gluten-free"
         ]
+      },
+      {
+        "name": "Krůtí prsa",
+        "emoji": "",
+        "tags": []
+      },
+      {
+        "name": "Krůtí stehno",
+        "emoji": "",
+        "tags": []
+      },
+      {
+        "name": "Krůtí mleté maso",
+        "emoji": "",
+        "tags": []
       }
     ],
     "Luštěniny": [
